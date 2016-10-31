@@ -1,15 +1,15 @@
 package powerline
 
 import (
-	"path"
-	"os"
-	"path/filepath"
-	"log"
-	"strings"
-	"os/exec"
-	"regexp"
 	"fmt"
+	"log"
+	"os"
+	"os/exec"
+	"path"
+	"path/filepath"
+	"regexp"
 	"strconv"
+	"strings"
 )
 
 type Segment struct {
@@ -19,6 +19,14 @@ type Segment struct {
 	values []string
 }
 
+func HostSegment(t Theme) Segment {
+	hn, _ := os.Hostname()
+	return Segment{
+		Bg:     t.Host.Bg,
+		Fg:     t.Host.Fg,
+		values: []string{hn},
+	}
+}
 
 func isWritableDir(dir string) bool {
 	tmpPath := path.Join(dir, ".powerline-write-test")
@@ -35,8 +43,8 @@ func LockSegment(cwd string, t Theme, s Symbols) Segment {
 		return Segment{values: nil}
 	} else {
 		return Segment{
-			Bg: t.Lock.Bg,
-			Fg: t.Lock.Fg,
+			Bg:     t.Lock.Bg,
+			Fg:     t.Lock.Fg,
 			values: []string{s.Lock},
 		}
 	}
@@ -56,8 +64,8 @@ func GetCurrentWorkingDir() (string, []string) {
 func HomeSegment(cwdParts []string, t Theme) Segment {
 	if cwdParts[0] == "~" {
 		return Segment{
-			Bg: t.Home.Bg,
-			Fg: t.Home.Fg,
+			Bg:     t.Home.Bg,
+			Fg:     t.Home.Fg,
 			values: []string{"~"},
 		}
 	} else {
@@ -78,17 +86,31 @@ func PathSegment(cwdParts []string, t Theme, s Symbols) Segment {
 		tmp := []string{}
 		tmp = append(tmp, cwdParts[0])
 		tmp = append(tmp, s.Ellipsis)
-		tmp = append(tmp, cwdParts[length - 2])
-		tmp = append(tmp, cwdParts[length - 1])
+		tmp = append(tmp, cwdParts[length-2])
+		tmp = append(tmp, cwdParts[length-1])
 		cwdParts = tmp
 	}
 
 	return Segment{
-		Bg: t.Path.Bg,
-		Fg: t.Path.Fg,
-		sepFg: t.Path.SepFg,
+		Bg:     t.Path.Bg,
+		Fg:     t.Path.Fg,
+		sepFg:  t.Path.SepFg,
 		values: cwdParts,
 	}
+}
+
+func isGitDir(cwdParts []string) bool {
+	var path string
+	for _, dir := range cwdParts {
+		if dir == "~" {
+			dir = os.Getenv("HOME")
+		}
+		path = filepath.Join(path, dir)
+		if _, err := os.Stat(filepath.Join(path, ".git")); !os.IsNotExist(err) {
+			return true
+		}
+	}
+	return false
 }
 
 func getGitInformation() (string, bool) {
@@ -124,7 +146,11 @@ func getGitInformation() (string, bool) {
 	return status, staged
 }
 
-func GitSegment(t Theme) Segment {
+func GitSegment(cwdParts []string, t Theme) Segment {
+	if !isGitDir(cwdParts) {
+		return Segment{values: nil}
+	}
+
 	gitStatus, gitStaged := getGitInformation()
 
 	if gitStatus != "" {
@@ -139,8 +165,8 @@ func GitSegment(t Theme) Segment {
 
 		}
 		return Segment{
-			Bg: bg,
-			Fg: fg,
+			Bg:     bg,
+			Fg:     fg,
 			values: []string{gitStatus},
 		}
 	} else {
@@ -154,8 +180,8 @@ func ExitCodeSegment(code string, t Theme) Segment {
 		return Segment{values: nil}
 	} else {
 		return Segment{
-			Bg: t.Error.Bg,
-			Fg: t.Error.Fg,
+			Bg:     t.Error.Bg,
+			Fg:     t.Error.Fg,
 			values: []string{code},
 		}
 	}

@@ -18,23 +18,25 @@ type Git struct {
 
 type Theme struct {
 	ShellBg string
-	Home ColorPair
-	Path ColorTriplet
+	Host    ColorPair
+	Home    ColorPair
+	Path    ColorTriplet
 	Git
-	Lock ColorPair
+	Lock  ColorPair
 	Error ColorPair
 }
 
 func SolarizedDark() Theme {
 	return Theme{
 		ShellBg: "0",
-		Home: ColorPair{Bg: "10", Fg: "0"},
-		Path: ColorTriplet{Bg: "8", Fg: "12", SepFg: "0"},
+		Host:    ColorPair{Bg: "4", Fg: "7"},
+		Home:    ColorPair{Bg: "10", Fg: "0"},
+		Path:    ColorTriplet{Bg: "8", Fg: "12", SepFg: "0"},
 		Git: Git{
 			Clean: ColorPair{Bg: "14", Fg: "0"},
 			Dirty: ColorPair{Bg: "2", Fg: "0"},
 		},
-		Lock: ColorPair{Bg: "4", Fg: "7"},
+		Lock:  ColorPair{Bg: "4", Fg: "7"},
 		Error: ColorPair{Bg: "1", Fg: "7"},
 	}
 }
